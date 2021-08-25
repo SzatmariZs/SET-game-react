@@ -1,0 +1,18 @@
+.card {
+	background-color: white;
+	box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+	height: 12rem;
+	width: 7rem;
+	border-radius: 16px;
+	display: flex;
+	justify-content: space-evenly;
+	flex-flow: column wrap;
+	align-items: center;
+	padding: 4px;
+	transition: all 0.25s;
+}
+
+.selected {
+	transform: scale(1.1);
+	box-shadow: 10px 10px rgba(0, 0, 0, 0.2);
+}
