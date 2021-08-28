@@ -1,0 +1,87 @@
+.board-container {
+	position: relative;
+}
+
+.board {
+	display: grid;
+	grid-template-columns: repeat(4, 7rem);
+	column-gap: 2rem;
+	row-gap: 2rem;
+	width: 32rem;
+	padding: 2rem;
+	float: left;
+	margin-right: 2rem;
+}
+
+button {
+	background-color: white;
+	color: saddlebrown;
+	font-size: 14px;
+	padding: 4px 8px;
+	border-radius: 4px;
+	border: 2px outset saddlebrown;
+	cursor: pointer;
+}
+
+.game-info {
+	color: white;
+	font-family: "Merriweather", serif;
+	display: block;
+	float: right;
+	margin-top: 32px;
+}
+
+.hidden {
+	display: none;
+}
+
+.card {
+	margin-bottom: 16px;
+	padding: 8px;
+	position: relative;
+}
+
+@keyframes not-set {
+	0% {
+		left: 0;
+	}
+	25% {
+		left: 2rem;
+	}
+	50% {
+		left: -1.5rem;
+	}
+	100% {
+		left: 0;
+	}
+}
+
+.not-set .card.selected {
+	animation: not-set 0.8s;
+}
+
+@keyframes is-set {
+	0% {
+		opacity: 1;
+		bottom: 0;
+	}
+	100% {
+		opacity: 0;
+		bottom: 4rem;
+	}
+}
+
+.is-set .card.selected {
+	animation: is-set 0.8s ease-in;
+}
+
+.winning-message {
+	display: block;
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: white;
+	font-size: 36px;
+	z-index: 10;
+}

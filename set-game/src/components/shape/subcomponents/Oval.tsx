@@ -13,7 +13,7 @@ export function Oval({ color, shading }: ShapeProps) {
 			ry='20'
 			fill={shading === Shadings.OPEN ? "transparent" : color}
 			stroke={isStriped ? "" : color}
-			stroke-width={isStriped ? "" : "3"}
+			strokeWidth={isStriped ? "" : "3"}
 			mask={isStriped ? "url(#mask-stripe)" : ""}
 		/>
 	);

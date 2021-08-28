@@ -1,13 +1,13 @@
 import "./App.css";
-import { Card } from "./components/card/Card";
+import { Board } from "./components/board/Board";
 import { Colors, Shadings, Symbols } from "./components/interfaces";
 import { Shape } from "./components/shape/Shape";
 
 function App() {
 	return (
-		<div class='game-container'>
-			{/* <game-board /> */}
-			<div class='rules'>
+		<div className='game-container'>
+			<Board />
+			{/* <div className='rules'>
 				<h1>SET</h1>
 				<p>
 					Set is a real-time card game designed by Marsha Falco in
@@ -69,9 +69,9 @@ function App() {
 					),
 				</p>
 				<p>
-					• and color (<span class='red'>red</span>,{" "}
-					<span class='green'>green</span>, or{" "}
-					<span class='purple'>purple</span>).
+					• and color (<span className='red'>red</span>,{" "}
+					<span className='green'>green</span>, or{" "}
+					<span className='purple'>purple</span>).
 				</p>
 				<p>
 					Each possible combination of features (e.g. a card with
@@ -88,7 +88,7 @@ function App() {
 					of the feature and the remaining card showing a different
 					version.
 				</p>
-				<p class='source-info'>
+				<p className='source-info'>
 					Source:{" "}
 					<a
 						target='_blank'
@@ -96,7 +96,7 @@ function App() {
 						Wikipedia
 					</a>
 				</p>
-			</div>
+			</div> */}
 		</div>
 	);
 }

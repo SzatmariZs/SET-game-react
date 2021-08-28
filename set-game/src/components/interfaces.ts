@@ -31,6 +31,7 @@ export interface CardProps extends ShapeProps {
 export type CardTrio = [CardProps, CardProps, CardProps];
 
 export enum GameStates {
+	BEFORE_START = "before-start",
 	NEUTRAL = "neutral",
 	IS_SET = "is-set",
 	NOT_SET = "not-set",

@@ -8,7 +8,7 @@ export function Diamond({ color, shading }: ShapeProps) {
 			points='3 23,43 43,83 23,43 3'
 			fill={shading === Shadings.OPEN ? "transparent" : color}
 			stroke={isStriped ? "" : color}
-			stroke-width={isStriped ? "" : "3"}
+			strokeWidth={isStriped ? "" : "3"}
 			mask={isStriped ? "url(#mask-stripe)" : ""}
 		/>
 	);
