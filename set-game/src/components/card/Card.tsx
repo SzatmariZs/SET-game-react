@@ -8,6 +8,7 @@ export function Card({
 	shading,
 	color,
 	isSelected,
+	clickHandler,
 }: CardProps) {
 	const shapeArray: CardProps[] = Array(number).fill({
 		color,
@@ -18,7 +19,8 @@ export function Card({
 	return (
 		<div
 			className={`card ${isSelected ? "selected" : ""}`}
-			title={[number, color, shading, symbol].join(", ")}>
+			title={[number, color, shading, symbol].join(", ")}
+			onClick={clickHandler}>
 			{shapeArray.map((shape, index) => (
 				<Shape
 					key={index}

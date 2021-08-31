@@ -16,6 +16,12 @@ export enum Shadings {
 	OPEN = "open",
 }
 
+export enum CardStates {
+	IN_DECK,
+	ON_BOARD,
+	REMOVED,
+}
+
 export interface ShapeProps {
 	shading: Shadings;
 	color: Colors;
@@ -26,6 +32,8 @@ export interface CardProps extends ShapeProps {
 	symbol?: Symbols;
 	number?: number;
 	isSelected?: boolean;
+	cardState?: CardStates;
+	clickHandler?: () => void;
 }
 
 export type CardTrio = [CardProps, CardProps, CardProps];

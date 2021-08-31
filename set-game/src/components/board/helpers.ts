@@ -1,4 +1,11 @@
-import { CardProps, CardTrio, Colors, Shadings, Symbols } from "../interfaces";
+import {
+	CardProps,
+	CardStates,
+	CardTrio,
+	Colors,
+	Shadings,
+	Symbols,
+} from "../interfaces";
 
 export const getFreshDeck = (): CardProps[] => {
 	const freshDeck: CardProps[] = [];
@@ -8,7 +15,14 @@ export const getFreshDeck = (): CardProps[] => {
 				(shading) =>
 					[Symbols.DIAMOND, Symbols.OVAL, Symbols.SQUIGGLE].forEach(
 						(symbol) => {
-							freshDeck.push({ number, color, shading, symbol });
+							freshDeck.push({
+								number,
+								color,
+								shading,
+								symbol,
+								cardState: CardStates.IN_DECK,
+								isSelected: false,
+							});
 						}
 					)
 			)

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Card } from "../card/Card";
-import { CardProps, CardTrio, GameStates } from "../interfaces";
+import { CardProps, CardStates, CardTrio, GameStates } from "../interfaces";
 import { getFreshDeck, areCardsASet } from "./helpers";
 import "./Board.css";
 
 export function Board() {
 	const [cardsInDeck, setCardsInDeck] = useState<CardProps[]>(getFreshDeck());
 	const [cardsOnBoard, setCardsOnBoard] = useState<CardProps[]>([]);
+	// const [gameCards, setGameCards] = useState<CardProps[]>(getFreshDeck());
 	const [setsOnBoard, setSetsOnBoard] = useState<CardTrio[]>([]);
 	const [gameState, setGameState] = useState<GameStates>(
 		GameStates.BEFORE_START
@@ -17,47 +18,58 @@ export function Board() {
 		const deckIndex = Math.floor(Math.random() * cardsInDeck.length);
 		const card = cardsInDeck[deckIndex];
 
-		setCardsInDeck([
-			...cardsInDeck.slice(0, deckIndex),
-			...cardsInDeck.slice(deckIndex + 1),
+		setCardsInDeck((currentCards) => [
+			...currentCards.slice(0, deckIndex),
+			...currentCards.slice(deckIndex + 1),
 		]);
 
 		return card;
 	};
 
 	const putCardFromDeckToBoard = (count: number): void => {
-		const cards = [];
-
 		for (let i = 0; i < count; i++) {
-			cards.push(getCardFromDeck());
+			setCardsOnBoard((currentCards) => [
+				...currentCards,
+				getCardFromDeck(),
+			]);
 		}
-
-		setCardsOnBoard([...cardsOnBoard, ...cards]);
 	};
 
 	const countSetsOnBoard = (): void => {
 		const cardsOnBoardLength = cardsOnBoard.length;
+		const sets: CardTrio[] = [];
 
-		for (let i = 0; i < cardsOnBoardLength - 2; i++) {
-			for (let j = i + 1; j < cardsOnBoardLength - 1; j++) {
-				for (let k = j + 1; k < cardsOnBoardLength; k++) {
-					const trio: CardTrio = [
-						cardsOnBoard[i],
-						cardsOnBoard[j],
-						cardsOnBoard[k],
-					];
+		if (cardsOnBoardLength > 3) {
+			for (let i = 0; i < cardsOnBoardLength - 2; i++) {
+				for (let j = i + 1; j < cardsOnBoardLength - 1; j++) {
+					for (let k = j + 1; k < cardsOnBoardLength; k++) {
+						const trio: CardTrio = [
+							cardsOnBoard[i],
+							cardsOnBoard[j],
+							cardsOnBoard[k],
+						];
+						console.log("cards on board", cardsOnBoard, trio);
 
-					if (areCardsASet(trio)) {
-						setSetsOnBoard([...setsOnBoard, trio]);
+						if (areCardsASet(trio)) {
+							sets.push(trio);
+						}
 					}
 				}
 			}
-		}
 
-		// if (!setsOnBoard.length) {
-		// 	putCardFromDeckToBoard(Math.min(3, cardsInDeck.length));
-		// 	countSetsOnBoard();
-		// }
+			console.log(sets);
+			if (!sets.length) {
+				putCardFromDeckToBoard(Math.min(3, cardsInDeck.length));
+				countSetsOnBoard();
+			}
+
+			setSetsOnBoard((currentSets) => [...currentSets, ...sets]);
+		}
+	};
+
+	const selectCard = (card: CardProps): void => {
+		// TBD
+		console.log(card);
 	};
 
 	const resetGame = (): void => {
@@ -95,7 +107,7 @@ export function Board() {
 						shading={card.shading}
 						color={card.color}
 						// isSelected={this.selectedCards.includes(card)}
-						// onClick={() => this.selectCard(card)}
+						clickHandler={() => selectCard(card)}
 					/>
 				))}
 			</div>
