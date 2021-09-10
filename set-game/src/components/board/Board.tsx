@@ -1,124 +1,134 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
 import { Card } from "../card/Card";
-import { CardProps, CardStates, CardTrio, GameStates } from "../interfaces";
-import { getFreshDeck, areCardsASet } from "./helpers";
+import { CardProps, CardTrio, GameStates } from "../interfaces";
+import { areCardsASet, CARD_ACTIONS, init } from "./helpers";
 import "./Board.css";
+import { GameState, CardReducerAction } from "./interfaces";
 
-export function Board() {
-	const [cardsInDeck, setCardsInDeck] = useState<CardProps[]>(getFreshDeck());
-	const [cardsOnBoard, setCardsOnBoard] = useState<CardProps[]>([]);
-	// const [gameCards, setGameCards] = useState<CardProps[]>(getFreshDeck());
-	const [setsOnBoard, setSetsOnBoard] = useState<CardTrio[]>([]);
-	const [gameState, setGameState] = useState<GameStates>(
-		GameStates.BEFORE_START
-	);
-	const [showHint, setShowHint] = useState<boolean>(false);
+function cardReducer(
+	gameState: GameState,
+	action: CardReducerAction
+): GameState {
+	switch (action.type) {
+		case CARD_ACTIONS.START:
+			return { ...gameState, gameState: GameStates.NEUTRAL };
+		case CARD_ACTIONS.PUT_ON_BOARD:
+			const deckIndex = Math.floor(
+				Math.random() * gameState.inDeck.length
+			);
+			const card = gameState.inDeck[deckIndex];
+			const newBoard = [...gameState.onBoard, card];
+			const sets = [];
+			const cardsOnBoardLength = newBoard.length;
 
-	const getCardFromDeck = (): CardProps => {
-		const deckIndex = Math.floor(Math.random() * cardsInDeck.length);
-		const card = cardsInDeck[deckIndex];
+			if (cardsOnBoardLength > 3) {
+				for (let i = 0; i < cardsOnBoardLength - 2; i++) {
+					for (let j = i + 1; j < cardsOnBoardLength - 1; j++) {
+						for (let k = j + 1; k < cardsOnBoardLength; k++) {
+							const trio: CardTrio = [
+								newBoard[i],
+								newBoard[j],
+								newBoard[k],
+							];
 
-		setCardsInDeck((currentCards) => [
-			...currentCards.slice(0, deckIndex),
-			...currentCards.slice(deckIndex + 1),
-		]);
-
-		return card;
-	};
-
-	const putCardFromDeckToBoard = (count: number): void => {
-		for (let i = 0; i < count; i++) {
-			setCardsOnBoard((currentCards) => [
-				...currentCards,
-				getCardFromDeck(),
-			]);
-		}
-	};
-
-	const countSetsOnBoard = (): void => {
-		const cardsOnBoardLength = cardsOnBoard.length;
-		const sets: CardTrio[] = [];
-
-		if (cardsOnBoardLength > 3) {
-			for (let i = 0; i < cardsOnBoardLength - 2; i++) {
-				for (let j = i + 1; j < cardsOnBoardLength - 1; j++) {
-					for (let k = j + 1; k < cardsOnBoardLength; k++) {
-						const trio: CardTrio = [
-							cardsOnBoard[i],
-							cardsOnBoard[j],
-							cardsOnBoard[k],
-						];
-						console.log("cards on board", cardsOnBoard, trio);
-
-						if (areCardsASet(trio)) {
-							sets.push(trio);
+							if (areCardsASet(trio)) {
+								sets.push(trio);
+							}
 						}
 					}
 				}
 			}
 
-			console.log(sets);
-			if (!sets.length) {
-				putCardFromDeckToBoard(Math.min(3, cardsInDeck.length));
-				countSetsOnBoard();
+			return {
+				...gameState,
+				inDeck: [
+					...gameState.inDeck.slice(0, deckIndex),
+					...gameState.inDeck.slice(deckIndex + 1),
+				],
+				onBoard: newBoard,
+				sets,
+			};
+		case CARD_ACTIONS.SELECT:
+			if (!action.payload) {
+				return gameState;
 			}
 
-			setSetsOnBoard((currentSets) => [...currentSets, ...sets]);
-		}
-	};
+			const newSelected: CardProps[] = [
+				...gameState.selected,
+				action.payload,
+			];
+
+			if (newSelected.length === 3 && areCardsASet(newSelected)) {
+				// TODO: check winning
+				// TODO: remove from onBoard
+				// TODO: deal 3 more
+				return { ...gameState, selected: [] };
+			}
+
+			return { ...gameState, selected: newSelected };
+		case CARD_ACTIONS.RESET:
+			return init();
+		default:
+			return gameState;
+	}
+}
+
+export function Board() {
+	const [game, dispatch] = useReducer(cardReducer, init());
+	const [showHint, setShowHint] = useState<boolean>(false);
 
 	const selectCard = (card: CardProps): void => {
-		// TBD
-		console.log(card);
-	};
-
-	const resetGame = (): void => {
-		setCardsInDeck(getFreshDeck());
-		setCardsOnBoard([]);
-		setSetsOnBoard([]);
-		setGameState(GameStates.BEFORE_START);
+		dispatch({ type: CARD_ACTIONS.SELECT, payload: card });
 	};
 
 	const startGame = (): void => {
-		setGameState(GameStates.NEUTRAL);
-		putCardFromDeckToBoard(12);
-		countSetsOnBoard();
+		dispatch({ type: CARD_ACTIONS.START });
+		for (let i = 0; i < 12; i++) {
+			dispatch({ type: CARD_ACTIONS.PUT_ON_BOARD });
+		}
+		// if (!sets.length) {
+		// 	putCardFromDeckToBoard(Math.min(3, cardsInDeck.length));
+		// 	countSetsOnBoard();
+		// }
 	};
 
 	return (
 		<div className='board-container'>
-			{gameState === GameStates.WON && (
+			{game.gameState === GameStates.WON && (
 				<div className='winning-message'>
 					<p>All possible sets cleared, YOU ARE AMAZING!</p>
-					<button onClick={resetGame}>Play again</button>
+					<button
+						onClick={() => dispatch({ type: CARD_ACTIONS.RESET })}>
+						Play again
+					</button>
 				</div>
 			)}
-			{gameState === GameStates.BEFORE_START && (
+			{game.gameState === GameStates.BEFORE_START && (
 				<button className='start' onClick={() => startGame()}>
 					START GAME
 				</button>
 			)}
-			<div className={`board ${gameState}`}>
-				{cardsOnBoard.map((card, index) => (
+			<div className={`board ${game.gameState}`}>
+				{game.onBoard.map((card, index) => (
 					<Card
 						key={index}
 						number={card.number}
 						symbol={card.symbol}
 						shading={card.shading}
 						color={card.color}
-						// isSelected={this.selectedCards.includes(card)}
+						isSelected={game.selected.includes(card)}
 						clickHandler={() => selectCard(card)}
 					/>
 				))}
 			</div>
 			<div className='game-info'>
-				<p>Number of SETs on board: {setsOnBoard.length}</p>
-				<p>Cards left in deck: {cardsInDeck.length}</p>
+				<p>Number of SETs on board: {game.sets.length}</p>
+				<p>Cards left in deck: {game.inDeck.length}</p>
 				<button onClick={() => setShowHint(!showHint)}>
 					{showHint ? "Hide hint" : "Show hint"}
 				</button>
 				{showHint &&
-					setsOnBoard?.map((set) => (
+					game.sets.map((set) => (
 						<div>
 							{set
 								.map((setObject) =>

@@ -1,11 +1,11 @@
 import {
 	CardProps,
-	CardStates,
-	CardTrio,
 	Colors,
+	GameStates,
 	Shadings,
 	Symbols,
 } from "../interfaces";
+import { GameState } from "./interfaces";
 
 export const getFreshDeck = (): CardProps[] => {
 	const freshDeck: CardProps[] = [];
@@ -20,7 +20,6 @@ export const getFreshDeck = (): CardProps[] => {
 								color,
 								shading,
 								symbol,
-								cardState: CardStates.IN_DECK,
 								isSelected: false,
 							});
 						}
@@ -32,7 +31,7 @@ export const getFreshDeck = (): CardProps[] => {
 	return freshDeck;
 };
 
-export const areCardsASet = (cards: CardTrio): boolean => {
+export const areCardsASet = (cards: CardProps[]): boolean => {
 	const numbers = new Set();
 	const symbols = new Set();
 	const colors = new Set();
@@ -50,3 +49,19 @@ export const areCardsASet = (cards: CardTrio): boolean => {
 			.length === 0
 	);
 };
+
+export enum CARD_ACTIONS {
+	PUT_ON_BOARD,
+	SELECT,
+	REMOVE_FROM_BOARD,
+	RESET,
+	START,
+}
+
+export const init = (): GameState => ({
+	inDeck: getFreshDeck(),
+	onBoard: [],
+	selected: [],
+	sets: [],
+	gameState: GameStates.BEFORE_START,
+});
