@@ -1,7 +1,13 @@
 import { useState, useReducer } from "react";
 import { Card } from "../card/Card";
-import { CardProps, CardTrio, GameStates } from "../interfaces";
-import { areCardsASet, CARD_ACTIONS, init } from "./helpers";
+import { CardProps, GameStates } from "../interfaces";
+import {
+	areCardsASet,
+	CARD_ACTIONS,
+	countSetsOnBoard,
+	init,
+	putOnBoard,
+} from "./helpers";
 import "./Board.css";
 import { GameState, CardReducerAction } from "./interfaces";
 
@@ -13,59 +19,72 @@ function cardReducer(
 		case CARD_ACTIONS.START:
 			return { ...gameState, gameState: GameStates.NEUTRAL };
 		case CARD_ACTIONS.PUT_ON_BOARD:
-			const deckIndex = Math.floor(
-				Math.random() * gameState.inDeck.length
-			);
-			const card = gameState.inDeck[deckIndex];
-			const newBoard = [...gameState.onBoard, card];
-			const sets = [];
-			const cardsOnBoardLength = newBoard.length;
-
-			if (cardsOnBoardLength > 3) {
-				for (let i = 0; i < cardsOnBoardLength - 2; i++) {
-					for (let j = i + 1; j < cardsOnBoardLength - 1; j++) {
-						for (let k = j + 1; k < cardsOnBoardLength; k++) {
-							const trio: CardTrio = [
-								newBoard[i],
-								newBoard[j],
-								newBoard[k],
-							];
-
-							if (areCardsASet(trio)) {
-								sets.push(trio);
-							}
-						}
-					}
-				}
-			}
-
-			return {
-				...gameState,
-				inDeck: [
-					...gameState.inDeck.slice(0, deckIndex),
-					...gameState.inDeck.slice(deckIndex + 1),
-				],
-				onBoard: newBoard,
-				sets,
-			};
+			return putOnBoard(gameState);
 		case CARD_ACTIONS.SELECT:
 			if (!action.payload) {
 				return gameState;
 			}
 
-			const newSelected: CardProps[] = [
-				...gameState.selected,
-				action.payload,
-			];
+			const newSelected: CardProps[] = gameState.selected.includes(
+				action.payload
+			)
+				? gameState.selected.filter(
+						(selected) => action.payload !== selected
+				  )
+				: [...gameState.selected, action.payload];
 
 			if (newSelected.length === 3 && areCardsASet(newSelected)) {
-				// TODO: check winning
-				// TODO: remove from onBoard
-				// TODO: deal 3 more
-				return { ...gameState, selected: [] };
+				const newOnBoard = gameState.onBoard.filter(
+					(cardOnBoard) => !newSelected.includes(cardOnBoard)
+				);
+				const sets = countSetsOnBoard(newOnBoard);
+				const newState =
+					!gameState.inDeck.length && !sets.length
+						? GameStates.WON
+						: GameStates.IS_SET;
+				let counter = 0;
+				let newGameState = {
+					...gameState,
+					gameState: newState,
+					onBoard: newOnBoard,
+					sets,
+				};
+
+				if (newState !== GameStates.WON) {
+					while (counter < 3) {
+						newGameState = {
+							...newGameState,
+							...putOnBoard(newGameState),
+						};
+						counter++;
+					}
+
+					if (!newGameState.sets.length) {
+						counter = 0;
+
+						while (
+							counter < Math.min(3, newGameState.inDeck.length)
+						) {
+							newGameState = {
+								...newGameState,
+								...putOnBoard(newGameState),
+							};
+							counter++;
+						}
+					}
+				}
+
+				return { ...newGameState, selected: [] };
 			}
 
-			return { ...gameState, selected: newSelected };
+			return {
+				...gameState,
+				selected: newSelected,
+				gameState:
+					newSelected.length === 3
+						? GameStates.NOT_SET
+						: GameStates.NEUTRAL,
+			};
 		case CARD_ACTIONS.RESET:
 			return init();
 		default:
@@ -86,10 +105,6 @@ export function Board() {
 		for (let i = 0; i < 12; i++) {
 			dispatch({ type: CARD_ACTIONS.PUT_ON_BOARD });
 		}
-		// if (!sets.length) {
-		// 	putCardFromDeckToBoard(Math.min(3, cardsInDeck.length));
-		// 	countSetsOnBoard();
-		// }
 	};
 
 	return (
@@ -132,7 +147,9 @@ export function Board() {
 						<div>
 							{set
 								.map((setObject) =>
-									Object.values(setObject).join(", ")
+									Object.values(setObject)
+										.filter(Boolean)
+										.join(", ")
 								)
 								.join("; ")}
 						</div>

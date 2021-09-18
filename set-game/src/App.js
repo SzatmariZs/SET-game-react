@@ -7,7 +7,7 @@ function App() {
 	return (
 		<div className='game-container'>
 			<Board />
-			{/* <div className='rules'>
+			<div className='rules'>
 				<h1>SET</h1>
 				<p>
 					Set is a real-time card game designed by Marsha Falco in
@@ -96,7 +96,7 @@ function App() {
 						Wikipedia
 					</a>
 				</p>
-			</div> */}
+			</div>
 		</div>
 	);
 }
