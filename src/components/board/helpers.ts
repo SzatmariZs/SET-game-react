@@ -52,20 +52,31 @@ export const areCardsASet = (cards: CardProps[]): boolean => {
 };
 
 export enum CARD_ACTIONS {
-	PUT_ON_BOARD,
 	SELECT,
-	REMOVE_FROM_BOARD,
 	RESET,
-	START,
 }
 
-export const init = (): GameState => ({
-	inDeck: getFreshDeck(),
-	onBoard: [],
-	selected: [],
-	sets: [],
-	gameState: GameStates.BEFORE_START,
-});
+export const init = (): GameState => {
+	let gameState: GameState = {
+		inDeck: getFreshDeck(),
+		onBoard: [],
+		selected: [],
+		sets: [],
+		gameState: GameStates.NEUTRAL,
+	};
+
+	for (let i = 0; i < 12; i++) {
+		gameState = { ...gameState, ...putOnBoard(gameState) };
+	}
+
+	if (!gameState.sets.length) {
+		for (let i = 0; i < 3; i++) {
+			gameState = { ...gameState, ...putOnBoard(gameState) };
+		}
+	}
+
+	return gameState;
+};
 
 export const countSetsOnBoard = (onBoard: CardProps[]): CardTrio[] => {
 	const sets = [];

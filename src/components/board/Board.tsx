@@ -16,10 +16,6 @@ function cardReducer(
 	action: CardReducerAction
 ): GameState {
 	switch (action.type) {
-		case CARD_ACTIONS.START:
-			return { ...gameState, gameState: GameStates.NEUTRAL };
-		case CARD_ACTIONS.PUT_ON_BOARD:
-			return putOnBoard(gameState);
 		case CARD_ACTIONS.SELECT:
 			if (!action.payload) {
 				return gameState;
@@ -42,7 +38,7 @@ function cardReducer(
 					!gameState.inDeck.length && !sets.length
 						? GameStates.WON
 						: GameStates.IS_SET;
-				let counter = 0;
+				let counter = newOnBoard.length - 9;
 				let newGameState = {
 					...gameState,
 					gameState: newState,
@@ -51,7 +47,7 @@ function cardReducer(
 				};
 
 				if (newState !== GameStates.WON) {
-					while (counter < 3) {
+					while (counter < 3 && newGameState.inDeck.length > 0) {
 						newGameState = {
 							...newGameState,
 							...putOnBoard(newGameState),
@@ -100,13 +96,6 @@ export function Board() {
 		dispatch({ type: CARD_ACTIONS.SELECT, payload: card });
 	};
 
-	const startGame = (): void => {
-		dispatch({ type: CARD_ACTIONS.START });
-		for (let i = 0; i < 12; i++) {
-			dispatch({ type: CARD_ACTIONS.PUT_ON_BOARD });
-		}
-	};
-
 	return (
 		<div className='board-container'>
 			{game.gameState === GameStates.WON && (
@@ -117,11 +106,6 @@ export function Board() {
 						Play again
 					</button>
 				</div>
-			)}
-			{game.gameState === GameStates.BEFORE_START && (
-				<button className='start' onClick={() => startGame()}>
-					START GAME
-				</button>
 			)}
 			<div className={`board ${game.gameState}`}>
 				{game.onBoard.map((card, index) => (
@@ -143,8 +127,8 @@ export function Board() {
 					{showHint ? "Hide hint" : "Show hint"}
 				</button>
 				{showHint &&
-					game.sets.map((set) => (
-						<div>
+					game.sets.map((set, index) => (
+						<div key={index}>
 							{set
 								.map((setObject) =>
 									Object.values(setObject)
